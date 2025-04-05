@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ThreatDetector Live Dashboard</title>
+  <!-- Include Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Reset some default margins/padding */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1e1e2f; /* Dark background */
+      color: #fff;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: #2b2e4a; /* Dark purple-blue for sidebar */
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .sidebar .logo {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+    }
+    .sidebar .nav {
+      list-style: none;
+    }
+    .sidebar .nav li {
+      margin: 15px 0;
+      cursor: pointer;
+      font-size: 0.95rem;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .sidebar .nav li:hover {
+      opacity: 1;
+    }
+
+    /* MAIN CONTENT */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      background: #2f325c; /* Another dark shade */
+      padding: 15px 20px;
+    }
+    .topbar h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    /* CARDS SECTION (stats area) */
+    .cards {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* Base card style */
+    .card {
+      flex: 1;
+      min-width: 200px;
+      border-radius: 8px;
+      padding: 20px;
+      color: #fff;
+    }
+    .card h2 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      opacity: 0.9;
+    }
+    .card p {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    /* Blue gradient card */
+    .card-blue {
+      background: linear-gradient(135deg, #36D1DC, #5B86E5);
+    }
+
+    /* Red gradient card */
+    .card-red {
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    }
+
+    /* CHARTS SECTION */
+    .charts-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 0 20px;
+      margin-bottom: 20px;
+    }
+    .chart-card {
+      flex: 1;
+      min-width: 300px;
+      background: #3a3f5c;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .chart-card h2 {
+      font-size: 1rem;
+      margin-bottom: 15px;
+      opacity: 0.9;
+    }
+    canvas {
+      /* ensures charts shrink if container is small */
+      width: 100% !important;
+      max-height: 300px;
+    }
+
+    /* CONTROLS SECTION */
+    .controls {
+      background: #2f325c;
+      padding: 15px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .controls label,
+    .controls select,
+    .controls input,
+    .controls button {
+      font-size: 0.9rem;
+    }
+    .controls select,
+    .controls input {
+      padding: 5px 8px;
+      border: none;
+      border-radius: 4px;
+      outline: none;
+      background: #3a3f5c;
+      color: #fff;
+    }
+    .controls button {
+      padding: 5px 8px;
+      border: none;
+      border-radius: 4px;
+      outline: none;
+      background: #5c62a3;
+      color: #fff;
+      cursor: pointer;
+    }
+    .controls button:hover {
+      background: #4e5390;
+    }
+
+    /* THREAT TABLE */
+    .table-container {
+      flex: 1;
+      overflow: auto;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #3a3f5c;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    thead {
+      background: #2f325c;
+    }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #2b2e4a;
+      font-size: 0.9rem;
+    }
+    th {
+      cursor: pointer;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #d2d2e4;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    td button {
+      background: #ff5f5f;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+    td button:hover {
+      background: #e44f4f;
+    }
+  </style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo" style="text-align: center; margin-bottom: 20px;">
+      <img 
+        src="{{ url_for('static', filename='images/logo.png') }}" 
+        alt="FortiScan Logo" 
+        style="width:120px; height:auto; display: block; margin: 0 auto 10px;"
+      />
+      <div style="font-weight: bold; font-size: 1.2rem;">FortiScan</div>
+    </div>
+    <ul class="nav"><center>
+      <li>Dashboard</li>
+      <li>Reports</li>
+      <li>Pie Chart</li>
+      <li>Time Chart</li>
+      <li>Data Table</li></center>
+    </ul>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <h1>ThreatDetector Live Dashboard</h1>
+    </div>
+
+    <!-- CARDS (for quick stats) -->
+    <div class="cards">
+      <!-- Blue gradient card for Total Threats -->
+      <div class="card card-blue">
+        <h2>Total Threats</h2>
+        <p id="cardTotalThreats">0</p>
+      </div>
+      <!-- Red gradient card for High Severity -->
+      <div class="card card-red">
+        <h2>High Severity</h2>
+        <p id="cardHighSeverity">0</p>
+      </div>
+    </div>
+
+    <!-- CHARTS SECTION -->
+    <div class="charts-container">
+      <!-- Donut Chart for severity distribution -->
+      <div class="chart-card">
+        <h2>Threats by Severity</h2>
+        <canvas id="threatChart"></canvas>
+      </div>
+      <!-- Line Chart for time distribution -->
+      <div class="chart-card">
+        <h2>Threat Events Over Time</h2>
+        <canvas id="timeChart"></canvas>
+      </div>
+    </div>
+
+    <!-- FILTER & EXPORT CONTROLS -->
+    <div class="controls">
+      <label for="severityFilter">Filter by Severity:</label>
+      <select id="severityFilter">
+        <option value="">All</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+      
+      <label for="siteFilter">Filter by Site:</label>
+      <input type="text" id="siteFilter" placeholder="Enter site name...">
+      
+      <button id="clearFilters">Clear Filters</button>
+      <button id="exportCSV">Export CSV</button>
+      <button id="exportJSON">Export JSON</button>
+    </div>
+
+    <!-- TABLE SECTION -->
+    <div class="table-container">
+      <table id="threatTable">
+        <thead>
+          <tr>
+            <th data-sort="timestamp">Timestamp</th>
+            <th data-sort="site">Site Name</th>
+            <th data-sort="threat">Cyber Threat</th>
+            <th data-sort="severity">Severity</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Threat data rows will be added here dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    /* 
+      Global Variables
+      - threatData: stores all fetched threats
+      - chartSeverity: the donut chart instance
+      - chartTime: the line chart instance
+    */
+    let threatData = [];
+    let chartSeverity;
+    let chartTime;
+
+    // Fetch threat history from Flask
+    async function fetchThreatHistory() {
+      try {
+        const response = await fetch('/api/threatHistory');
+        const data = await response.json();
+        threatData = data;
+        renderTable(data);
+        updateSeverityChart(data);
+        updateTimeChart(data);
+        updateCardStats(data);
+      } catch (error) {
+        console.error("Error fetching threat history:", error);
+      }
+    }
+
+    // Update card stats
+    function updateCardStats(data) {
+      // Show total threats
+      document.getElementById('cardTotalThreats').textContent = data.length;
+
+      // Count how many are "High"
+      let highCount = data.filter(entry => entry.severity === "High").length;
+      document.getElementById('cardHighSeverity').textContent = highCount;
+    }
+
+    // Render table with filtering
+    function renderTable(data) {
+      const tbody = document.querySelector('#threatTable tbody');
+      tbody.innerHTML = "";
+      const severityFilter = document.getElementById('severityFilter').value;
+      const siteFilter = document.getElementById('siteFilter').value.toLowerCase();
+
+      // Filter data
+      const filteredData = data.filter(entry => {
+        const severityMatch = severityFilter === "" || entry.severity === severityFilter;
+        const siteMatch = siteFilter === "" || (entry.site && entry.site.toLowerCase().includes(siteFilter));
+        return severityMatch && siteMatch;
+      });
+
+      // Build rows
+      filteredData.forEach(entry => {
+        const row = document.createElement("tr");
+        
+        // Timestamp
+        const timestampCell = document.createElement("td");
+        timestampCell.textContent = entry.timestamp || "N/A";
+        row.appendChild(timestampCell);
+
+        // Site
+        const siteCell = document.createElement("td");
+        siteCell.textContent = entry.site || "N/A";
+        row.appendChild(siteCell);
+
+        // Threat
+        const threatCell = document.createElement("td");
+        threatCell.textContent = entry.threat || "N/A";
+        row.appendChild(threatCell);
+
+        // Severity
+        const severityCell = document.createElement("td");
+        severityCell.textContent = entry.severity || "N/A";
+        row.appendChild(severityCell);
+
+        // Report button
+        const actionCell = document.createElement("td");
+        const reportBtn = document.createElement("button");
+        reportBtn.textContent = "Report";
+        reportBtn.addEventListener("click", () => {
+          const threatDetails = {
+            timestamp: entry.timestamp,
+            site: entry.site,
+            threat: entry.threat,
+            severity: entry.severity,
+            type: entry.type,
+            subtype: entry.subtype
+          };
+          fetch("/reportThreat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ threatInfo: JSON.stringify(threatDetails, null, 2) })
+          })
+          .then(response => response.json())
+          .then(result => {
+            if (result.error) {
+              alert("Error: " + result.error);
+            } else {
+              alert(result.message);
+            }
+          })
+          .catch(error => {
+            console.error("Error reporting threat:", error);
+            alert("Error reporting threat: " + error);
+          });
+        });
+        actionCell.appendChild(reportBtn);
+        row.appendChild(actionCell);
+
+        tbody.appendChild(row);
+      });
+    }
+
+    // Donut chart for severity distribution
+    function updateSeverityChart(data) {
+      // Count severities
+      const severityCounts = data.reduce((acc, entry) => {
+        const severity = entry.severity || "Unknown";
+        acc[severity] = (acc[severity] || 0) + 1;
+        return acc;
+      }, {});
+
+      const labels = Object.keys(severityCounts);
+      const counts = labels.map(label => severityCounts[label]);
+
+      const ctx = document.getElementById('threatChart').getContext('2d');
+      if (chartSeverity) {
+        chartSeverity.destroy();
+      }
+      chartSeverity = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: [
+              '#ff5f5f', // red
+              '#ffca3a', // yellow
+              '#8ac926', // green
+              '#1982c4', // blue
+              '#6a4c93', // purple
+              '#d2d2e4'  // fallback color
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#fff'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Line chart for time distribution (by hour)
+    function updateTimeChart(data) {
+      // Initialize array for 24 hours
+      const hourCounts = Array(24).fill(0);
+      data.forEach(entry => {
+        if (entry.timestamp) {
+          // Format "YYYY-MM-DD HH:MM:SS"
+          const parts = entry.timestamp.split(' ');
+          if (parts.length > 1) {
+            const timePart = parts[1];
+            const hour = parseInt(timePart.split(':')[0], 10);
+            if (!isNaN(hour)) {
+              hourCounts[hour]++;
+            }
+          }
+        }
+      });
+      const labels = Array.from({length: 24}, (_, i) => i.toString());
+
+      const ctx = document.getElementById('timeChart').getContext('2d');
+      if (chartTime) {
+        chartTime.destroy();
+      }
+      chartTime = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Threats per Hour',
+            data: hourCounts,
+            fill: false,
+            borderColor: '#ff5f5f',
+            backgroundColor: '#ff5f5f',
+            tension: 0.2
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              ticks: { color: '#fff' },
+              grid: { color: '#444' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#fff' },
+              grid: { color: '#444' }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#fff'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Export as CSV
+    function exportCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Timestamp,Site,Threat,Severity\n";
+      threatData.forEach(entry => {
+        const row = [
+          entry.timestamp || "",
+          entry.site || "",
+          entry.threat || "",
+          entry.severity || ""
+        ].join(",");
+        csvContent += row + "\n";
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "threat_history.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Export as JSON
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(threatData, null, 2));
+      const link = document.createElement("a");
+      link.setAttribute("href", dataStr);
+      link.setAttribute("download", "threat_history.json");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Hook up filters & export buttons
+    document.getElementById("severityFilter").addEventListener("change", () => renderTable(threatData));
+    document.getElementById("siteFilter").addEventListener("input", () => renderTable(threatData));
+    document.getElementById("clearFilters").addEventListener("click", () => {
+      document.getElementById("severityFilter").value = "";
+      document.getElementById("siteFilter").value = "";
+      renderTable(threatData);
+    });
+    document.getElementById("exportCSV").addEventListener("click", exportCSV);
+    document.getElementById("exportJSON").addEventListener("click", exportJSON);
+
+    // Sorting: clicking on table headers
+    document.querySelectorAll("#threatTable th[data-sort]").forEach(header => {
+      header.addEventListener("click", () => {
+        const sortKey = header.getAttribute("data-sort");
+        threatData.sort((a, b) => {
+          if (a[sortKey] < b[sortKey]) return -1;
+          if (a[sortKey] > b[sortKey]) return 1;
+          return 0;
+        });
+        renderTable(threatData);
+      });
+    });
+
+    // Initial fetch & periodic refresh
+    fetchThreatHistory();
+    setInterval(fetchThreatHistory, 5000);
+  </script>
+</body>
+</html>
