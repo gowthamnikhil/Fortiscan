@@ -1,0 +1,16 @@
+# Ignore Python cache files
+__pycache__
+*.pyc
+
+# Ignore virtual environments
+venv
+env
+.venv
+.env
+
+# Ignore local logs and temporary files
+*.log
+tmp/
+
+# Ignore your dataset if it's large and not needed in the image
+data/
