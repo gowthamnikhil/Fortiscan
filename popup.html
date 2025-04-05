@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ThreatBlocker</title>
+  <style>
+    /* LIGHT THEME */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 320px;
+      text-align: center;
+      transition: background 0.3s, color 0.3s;
+      background: linear-gradient(135deg, #ffc107, #ff5722);
+      color: #1b1b1b;
+    }
+    /* DARK THEME */
+    body.dark {
+      background: linear-gradient(135deg, #1f1f2e, #1b1b24);
+      color: #f0f0f0;
+    }
+    header {
+      padding: 10px;
+      transition: background 0.3s;
+      background: linear-gradient(45deg, #ff5722, #ff9800);
+      color: #1111;
+    }
+    body.dark header {
+      background: linear-gradient(45deg, #8000ff, #ff0080);
+    }
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .container {
+      padding: 10px;
+      text-align: center;
+      margin: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+    body.dark .container {
+      background: rgba(34, 34, 34, 0.7);
+    }
+    .site-info {
+      margin: 10px 0;
+    }
+    .site-info h3 {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+    .stats {
+      font-size: 14px;
+      margin: 5px 0;
+    }
+    .possible-threats {
+      font-size: 14px;
+      margin: 5px 0;
+      color: #d7322a;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .toggle-row label {
+      margin-left: 8px;
+      font-size: 14px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #f44336;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    button {
+      width: 90%;
+      padding: 10px;
+      margin: 10px auto;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      display: block;
+      transition: transform 0.2s, background 0.3s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    .danger {
+      background: #e91e63;
+      color: #fff;
+    }
+    .danger:hover {
+      background: #d81b60;
+    }
+    .blue {
+      background: #2196f3;
+      color: #fff;
+    }
+    .blue:hover {
+      background: #1976d2;
+    }
+    .primary {
+      background: #f44336;
+      color: #fff;
+    }
+    .primary:hover {
+      background: #d7322a;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+      max-height: 150px;
+      overflow-y: auto;
+      text-align: left;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    li {
+      padding: 5px;
+      margin: 3px;
+      border-radius: 5px;
+      font-size: 12px;
+      background: #f8d7da;
+      border-left: 5px solid red;
+      color: #1b1b1b;
+    }
+    /* Button for false positive feedback */
+    li button {
+      margin-left: 5px;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    /* Dark mode override for threat list items */
+    body.dark li {
+      background: #3b3b3b;     /* darker background for dark mode */
+      border-left: 5px solid #ff4444;
+      color: #f0f0f0;         /* text remains visible */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>FortiScan</h2>
+  </header>
+  <div class="container">
+    <div class="site-info">
+      <h3 id="siteName">Loading...</h3>
+      <div class="stats" id="blockedThreatsCount">
+        Threats: 0 (page) / 0 (total)
+      </div>
+      <div class="possible-threats" id="possibleThreatsCount">
+        Possible threats: 0
+      </div>
+    </div>
+
+    <!-- Block Ads toggle -->
+    <div class="toggle-row">
+      <label class="switch">
+        <input type="checkbox" id="toggleAdBlock" />
+        <span class="slider"></span>
+      </label>
+      <label for="toggleAdBlock">Block Ads</label>
+    </div>
+
+    <button id="toggleScanning" class="blue">Disable Scanning</button>
+    <button id="clearHistory" class="danger">Clear History</button>
+    <button id="exportHistory" class="danger">Export History</button>
+    <button id="blockSite" class="danger">Block This Website</button>
+    <button id="toggleDarkMode" class="blue">Enable Dark Mode</button>
+    <button id="reportThreat" class="blue">Report Threat</button>
+
+    <!-- NEW BUTTON for syncing threat data to the server -->
+    <button id="syncHistory" class="blue">Sync with Dashboard</button>
+
+    <ul id="threatHistoryList"></ul>
+  </div>
+  <!-- Make sure the path matches your project structure -->
+  <script src="scripts/popup.js"></script>
+</body>
+</html>

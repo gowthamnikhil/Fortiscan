@@ -1,0 +1,42 @@
+[
+  {
+    "severity": "High",
+    "site": "timesofindia.indiatimes.com",
+    "subtype": "",
+    "threat": "Keylogging (Hardware Keyloggers, Software Keyloggers)",
+    "timestamp": "3/13/2025, 12:23:18 AM",
+    "type": "Keylogging (Hardware Keyloggers, Software Keyloggers)"
+  },
+  {
+    "severity": "High",
+    "site": "timesofindia.indiatimes.com",
+    "subtype": "",
+    "threat": "Identity Theft (Account Takeover, Financial Fraud, Medical Identity Theft)",
+    "timestamp": "3/13/2025, 12:23:21 AM",
+    "type": "Identity Theft (Account Takeover, Financial Fraud, Medical Identity Theft)"
+  },
+  {
+    "severity": "High",
+    "site": "timesofindia.indiatimes.com",
+    "subtype": "",
+    "threat": "Identity Theft (Account Takeover, Financial Fraud, Medical Identity Theft)",
+    "timestamp": "3/13/2025, 12:23:34 AM",
+    "type": "Identity Theft (Account Takeover, Financial Fraud, Medical Identity Theft)"
+  },
+  {
+    "severity": "High",
+    "site": "timesofindia.indiatimes.com",
+    "subtype": "",
+    "threat": "Identity Theft (Account Takeover, Financial Fraud, Medical Identity Theft)",
+    "timestamp": "3/13/2025, 12:24:27 AM",
+    "type": "Identity Theft (Account Takeover, Financial Fraud, Medical Identity Theft)"
+  },
+  {
+    "severity": "High",
+    "site": "127.0.0.1",
+    "subtype": "",
+    "threat": "Keylogging (Hardware Keyloggers, Software Keyloggers)",
+    "timestamp": "3/13/2025, 12:24:51 AM",
+    "type": "Keylogging (Hardware Keyloggers, Software Keyloggers)"
+  }
+]
